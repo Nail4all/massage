@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Запись на массаж</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +28,7 @@
             background-color: white;
             padding: 15px;
             border-radius: 5px;
-            flex: 1 0 30%;
+            flex: 1 0 21%;
             text-align: center;
             cursor: pointer;
             border: 1px solid #ccc;
@@ -68,13 +67,6 @@
             max-width: 400px;
             border-radius: 5px;
         }
-        #bookingForm input[type="text"], #bookingForm input[type="email"] {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 15px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
         #bookingForm button {
             background-color: #5A67D8;
             color: white;
@@ -102,15 +94,12 @@
 </header>
 
 <div class="container">
-    <h2>Доступные время</h2>
+    <h2>Доступное время</h2>
     <div class="schedule">
-        <div class="time-slot" data-time="10:00">10:00</div>
-        <div class="time-slot booked">11:00</div>
-        <div class="time-slot" data-time="12:00">12:00</div>
-        <div class="time-slot" data-time="13:00">13:00</div>
-        <div class="time-slot booked">14:00</div>
-        <div class="time-slot" data-time="15:00">15:00</div>
-        <div class="time-slot" data-time="16:00">16:00</div>
+        <!-- Генерация временных слотов -->
+        <!-- Время с 9:00 до 18:00 с шагом 30 минут -->
+        <!-- Занятые слоты: 10:30, 13:00, 15:30 -->
+        <!-- Используем JavaScript для генерации -->
     </div>
 </div>
 
@@ -119,25 +108,64 @@
         <span class="close-btn" onclick="closeForm()">&times;</span>
         <h2>Подтвердите запись</h2>
         <p id="selectedTime"></p>
-        <input type="text" placeholder="Ваше имя" required>
-        <input type="email" placeholder="Email" required>
         <button onclick="submitForm()">Записаться</button>
     </div>
 </div>
 
 <footer>
-    &copy; 2023 Массажный салон
+    &copy; 2024 Массажный салон
 </footer>
 
 <script>
-    const timeSlots = document.querySelectorAll('.time-slot:not(.booked)');
+    // Инициализация переменных
+    const scheduleContainer = document.querySelector('.schedule');
     const bookingForm = document.getElementById('bookingForm');
     const selectedTimeElement = document.getElementById('selectedTime');
+    let selectedTime = '';
+
+    // Временные параметры
+    const startTime = 9; // Начало дня в 9:00
+    const endTime = 18; // Конец дня в 18:00
+    const timeStep = 30; // Шаг в минутах
+
+    // Занятые временные слоты
+    const bookedSlots = ['10:30', '13:00', '15:30'];
+
+    // Функция для форматирования времени
+    function formatTime(hours, minutes) {
+        return (
+            ('0' + hours).slice(-2) +
+            ':' +
+            ('0' + minutes).slice(-2)
+        );
+    }
+
+    // Генерация временных слотов
+    for (let h = startTime; h < endTime; h++) {
+        for (let m = 0; m < 60; m += timeStep) {
+            const time = formatTime(h, m);
+            const slot = document.createElement('div');
+            slot.classList.add('time-slot');
+
+            // Проверяем, является ли слот занятым
+            if (bookedSlots.includes(time)) {
+                slot.classList.add('booked');
+            } else {
+                slot.setAttribute('data-time', time);
+            }
+
+            slot.textContent = time;
+            scheduleContainer.appendChild(slot);
+        }
+    }
+
+    // Добавляем обработчики событий для доступных слотов
+    const timeSlots = document.querySelectorAll('.time-slot:not(.booked)');
 
     timeSlots.forEach(slot => {
         slot.addEventListener('click', function() {
-            const time = this.getAttribute('data-time');
-            selectedTimeElement.textContent = 'Вы выбрали время: ' + time;
+            selectedTime = this.getAttribute('data-time');
+            selectedTimeElement.textContent = 'Вы выбрали время: ' + selectedTime;
             bookingForm.style.display = 'block';
         });
     });
@@ -147,7 +175,7 @@
     }
 
     function submitForm() {
-        alert('Ваша запись принята!');
+        alert('Ваша запись на ' + selectedTime + ' принята!');
         bookingForm.style.display = 'none';
     }
 </script>
