@@ -3,52 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <title>Запись на массаж</title>
+    <!-- Подключаем иконки Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Подключаем Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
+        /* Стилизация */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
         }
         header {
-            background-color: #5A67D8;
+            background-color: #6C63FF;
             color: white;
             padding: 20px;
             text-align: center;
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
         }
         .container {
             padding: 20px;
+        }
+        .date-picker {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .date-picker input {
+            padding: 10px;
+            font-size: 16px;
         }
         .schedule {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+            justify-content: center;
         }
         .time-slot {
             background-color: white;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 10px;
             flex: 1 0 21%;
             text-align: center;
             cursor: pointer;
             border: 1px solid #ccc;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
         }
         .time-slot.booked {
-            background-color: #E2E8F0;
-            color: #718096;
+            background-color: #E0E0E0;
+            color: #9E9E9E;
             cursor: not-allowed;
         }
         .time-slot:hover {
-            border-color: #5A67D8;
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-color: #6C63FF;
+        }
+        .time-slot .fa-clock {
+            margin-bottom: 5px;
+            color: #6C63FF;
         }
         footer {
-            background-color: #5A67D8;
+            background-color: #6C63FF;
             color: white;
             text-align: center;
             padding: 10px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
         }
         #bookingForm {
             display: none;
@@ -61,29 +84,45 @@
         }
         #bookingForm .form-content {
             background-color: white;
-            margin: 10% auto;
+            margin: 5% auto;
             padding: 20px;
             width: 80%;
             max-width: 400px;
+            border-radius: 10px;
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+        #bookingForm input[type="text"], #bookingForm input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
             border-radius: 5px;
         }
         #bookingForm button {
-            background-color: #5A67D8;
+            background-color: #6C63FF;
             color: white;
-            padding: 10px;
+            padding: 12px;
             border: none;
             width: 100%;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
         #bookingForm button:hover {
-            background-color: #434190;
+            background-color: #574B90;
         }
         .close-btn {
-            float: right;
-            font-size: 18px;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 20px;
             cursor: pointer;
-            color: #718096;
+            color: #9E9E9E;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -94,12 +133,13 @@
 </header>
 
 <div class="container">
+    <div class="date-picker">
+        <label for="date">Выберите дату:</label>
+        <input type="date" id="date" name="date">
+    </div>
     <h2>Доступное время</h2>
     <div class="schedule">
-        <!-- Генерация временных слотов -->
-        <!-- Время с 9:00 до 18:00 с шагом 30 минут -->
-        <!-- Занятые слоты: 10:30, 13:00, 15:30 -->
-        <!-- Используем JavaScript для генерации -->
+        <!-- Временные слоты будут генерироваться динамически -->
     </div>
 </div>
 
@@ -107,7 +147,9 @@
     <div class="form-content">
         <span class="close-btn" onclick="closeForm()">&times;</span>
         <h2>Подтвердите запись</h2>
-        <p id="selectedTime"></p>
+        <p id="selectedDateTime"></p>
+        <input type="text" id="name" placeholder="Ваше имя" required>
+        <input type="tel" id="phone" placeholder="Номер телефона" required>
         <button onclick="submitForm()">Записаться</button>
     </div>
 </div>
@@ -117,21 +159,24 @@
 </footer>
 
 <script>
-    // Инициализация переменных
     const scheduleContainer = document.querySelector('.schedule');
     const bookingForm = document.getElementById('bookingForm');
-    const selectedTimeElement = document.getElementById('selectedTime');
+    const selectedDateTimeElement = document.getElementById('selectedDateTime');
+    let selectedDate = '';
     let selectedTime = '';
+    const startTime = 9;
+    const endTime = 18;
+    const timeStep = 30;
+    const bookedSlots = {
+        '2023-10-21': ['10:30', '13:00', '15:30'],
+        '2023-10-22': ['11:00', '14:30']
+    };
 
-    // Временные параметры
-    const startTime = 9; // Начало дня в 9:00
-    const endTime = 18; // Конец дня в 18:00
-    const timeStep = 30; // Шаг в минутах
+    document.getElementById('date').addEventListener('change', function() {
+        selectedDate = this.value;
+        generateTimeSlots(selectedDate);
+    });
 
-    // Занятые временные слоты
-    const bookedSlots = ['10:30', '13:00', '15:30'];
-
-    // Функция для форматирования времени
     function formatTime(hours, minutes) {
         return (
             ('0' + hours).slice(-2) +
@@ -140,44 +185,71 @@
         );
     }
 
-    // Генерация временных слотов
-    for (let h = startTime; h < endTime; h++) {
-        for (let m = 0; m < 60; m += timeStep) {
-            const time = formatTime(h, m);
-            const slot = document.createElement('div');
-            slot.classList.add('time-slot');
+    function generateTimeSlots(date) {
+        scheduleContainer.innerHTML = '';
+        const today = new Date().toISOString().split('T')[0];
+        const isToday = date === today;
+        const now = new Date();
 
-            // Проверяем, является ли слот занятым
-            if (bookedSlots.includes(time)) {
-                slot.classList.add('booked');
-            } else {
-                slot.setAttribute('data-time', time);
+        for (let h = startTime; h < endTime; h++) {
+            for (let m = 0; m < 60; m += timeStep) {
+                const time = formatTime(h, m);
+                const slot = document.createElement('div');
+                slot.classList.add('time-slot');
+
+                // Проверяем, является ли слот занятым
+                const dateBookedSlots = bookedSlots[date] || [];
+                if (dateBookedSlots.includes(time)) {
+                    slot.classList.add('booked');
+                } else if (isToday) {
+                    const slotTime = new Date();
+                    slotTime.setHours(h, m, 0, 0);
+                    if (slotTime <= now) {
+                        slot.classList.add('booked');
+                    }
+                }
+
+                if (!slot.classList.contains('booked')) {
+                    slot.setAttribute('data-time', time);
+                    slot.addEventListener('click', function() {
+                        selectedTime = this.getAttribute('data-time');
+                        selectedDateTimeElement.textContent = 'Вы выбрали: ' + formatDate(selectedDate) + ', ' + selectedTime;
+                        bookingForm.style.display = 'block';
+                    });
+                }
+
+                slot.innerHTML = '<i class="fa fa-clock"></i><br>' + time;
+                scheduleContainer.appendChild(slot);
             }
-
-            slot.textContent = time;
-            scheduleContainer.appendChild(slot);
         }
     }
 
-    // Добавляем обработчики событий для доступных слотов
-    const timeSlots = document.querySelectorAll('.time-slot:not(.booked)');
-
-    timeSlots.forEach(slot => {
-        slot.addEventListener('click', function() {
-            selectedTime = this.getAttribute('data-time');
-            selectedTimeElement.textContent = 'Вы выбрали время: ' + selectedTime;
-            bookingForm.style.display = 'block';
-        });
-    });
+    function formatDate(dateString) {
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        return new Date(dateString).toLocaleDateString('ru-RU', options);
+    }
 
     function closeForm() {
         bookingForm.style.display = 'none';
     }
 
     function submitForm() {
-        alert('Ваша запись на ' + selectedTime + ' принята!');
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+
+        if (name === '' || phone === '') {
+            alert('Пожалуйста, заполните все поля.');
+            return;
+        }
+
+        alert('Спасибо, ' + name + '! Ваша запись на ' + formatDate(selectedDate) + ' в ' + selectedTime + ' принята.');
         bookingForm.style.display = 'none';
+
+        // Здесь можно добавить код для отправки данных на сервер или боту
     }
+
+    // Устанавливаем минимальную дату для выбора (сегодня)
+    document.getElementById('date').setAttribute('min', new Date().toISOString().split('T')[0]);
 </script>
 
 </body>
