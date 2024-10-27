@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Запись на массаж</title>
-    <!-- Подключаем иконки Font Awesome -->
+    <!-- Подключаем иконки Font Awesome и шрифт Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Подключаем Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
-        /* Стилизация */
+        /* Основные стили */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f0f2f5;
@@ -27,45 +26,10 @@
         }
         .container {
             padding: 20px;
+            display: none; /* Скрываем основное содержимое до завершения онбординга */
         }
-        .date-picker {
-            margin-bottom: 20px;
+        .date-picker, .schedule {
             text-align: center;
-        }
-        .date-picker input {
-            padding: 10px;
-            font-size: 16px;
-        }
-        .schedule {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        .time-slot {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            flex: 1 0 21%;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        .time-slot.booked {
-            background-color: #E0E0E0;
-            color: #9E9E9E;
-            cursor: not-allowed;
-        }
-        .time-slot:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-color: #6C63FF;
-        }
-        .time-slot .fa-clock {
-            margin-bottom: 5px;
-            color: #6C63FF;
         }
         footer {
             background-color: #6C63FF;
@@ -73,66 +37,105 @@
             text-align: center;
             padding: 10px;
         }
-        #bookingForm {
-            display: none;
-            background-color: rgba(0,0,0,0.5);
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+
+        /* Онбординг стили */
+        .onboarding-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            background-color: #ffffff;
         }
-        #bookingForm .form-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
+        .onboarding-container img {
             width: 80%;
-            max-width: 400px;
+            max-width: 300px;
+            margin-bottom: 20px;
             border-radius: 10px;
-            position: relative;
-            animation: fadeIn 0.3s;
         }
-        #bookingForm input[type="text"], #bookingForm input[type="tel"] {
-            width: 100%;
-            padding: 12px;
+        .onboarding-title {
+            font-size: 24px;
+            font-weight: bold;
             margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            color: #333;
         }
-        #bookingForm button {
-            background-color: #6C63FF;
-            color: white;
-            padding: 12px;
-            border: none;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
+        .onboarding-text {
             font-size: 16px;
+            color: #555;
+            margin-bottom: 30px;
+            padding: 0 20px;
         }
-        #bookingForm button:hover {
-            background-color: #574B90;
-        }
-        .close-btn {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            font-size: 20px;
+        .onboarding-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
             cursor: pointer;
-            color: #9E9E9E;
+            transition: background-color 0.3s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .onboarding-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Анимация и адаптивность */
+        .fade {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .fade.active {
+            opacity: 1;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            .onboarding-container img {
+                width: 90%;
+            }
+            .onboarding-title {
+                font-size: 20px;
+            }
+            .onboarding-text {
+                font-size: 14px;
+            }
+            .onboarding-button {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Запись на массаж</h1>
-</header>
+<!-- Онбординг экраны -->
+<div id="onboarding" class="onboarding-container">
+    <div class="onboarding-screen fade active" data-index="0">
+        <img src="https://via.placeholder.com/300x200" alt="Онбординг 1">
+        <div class="onboarding-title">По-настоящему удобная онлайн запись!</div>
+        <div class="onboarding-text">78% офисных работников ежедневно использует Telegram, сделайте запись к вам максимально удобной!</div>
+        <button class="onboarding-button" onclick="nextOnboarding()">Дальше</button>
+    </div>
+    <div class="onboarding-screen fade" data-index="1">
+        <img src="https://via.placeholder.com/300x200" alt="Онбординг 2">
+        <div class="onboarding-title">Помогите клиентам не забывать о записи!</div>
+        <div class="onboarding-text">Автоматические напоминания о записи помогут вашим клиентам быть в курсе предстоящих визитов.</div>
+        <button class="onboarding-button" onclick="nextOnboarding()">Дальше</button>
+    </div>
+    <div class="onboarding-screen fade" data-index="2">
+        <img src="https://via.placeholder.com/300x200" alt="Онбординг 3">
+        <div class="onboarding-title">Начните прямо сейчас!</div>
+        <div class="onboarding-text">Установите ваше расписание, и клиенты смогут записаться в любое удобное время!</div>
+        <button class="onboarding-button" onclick="finishOnboarding()">Начать</button>
+    </div>
+</div>
 
+<!-- Основное содержимое после завершения онбординга -->
 <div class="container">
+    <header>
+        <h1>Запись на массаж</h1>
+    </header>
     <div class="date-picker">
         <label for="date">Выберите дату:</label>
         <input type="date" id="date" name="date">
@@ -141,115 +144,63 @@
     <div class="schedule">
         <!-- Временные слоты будут генерироваться динамически -->
     </div>
+    <footer>
+        &copy; 2024 Массажный салон
+    </footer>
 </div>
-
-<div id="bookingForm">
-    <div class="form-content">
-        <span class="close-btn" onclick="closeForm()">&times;</span>
-        <h2>Подтвердите запись</h2>
-        <p id="selectedDateTime"></p>
-        <input type="text" id="name" placeholder="Ваше имя" required>
-        <input type="tel" id="phone" placeholder="Номер телефона" required>
-        <button onclick="submitForm()">Записаться</button>
-    </div>
-</div>
-
-<footer>
-    &copy; 2024 Массажный салон
-</footer>
 
 <script>
+    // Логика онбординга
+    let currentOnboardingIndex = 0;
+    const onboardingScreens = document.querySelectorAll('.onboarding-screen');
+
+    function nextOnboarding() {
+        onboardingScreens[currentOnboardingIndex].classList.remove('active');
+        currentOnboardingIndex++;
+        if (currentOnboardingIndex < onboardingScreens.length) {
+            onboardingScreens[currentOnboardingIndex].classList.add('active');
+        }
+    }
+
+    function finishOnboarding() {
+        document.getElementById('onboarding').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+        localStorage.setItem('onboardingCompleted', 'true'); // Записываем состояние завершения онбординга
+    }
+
+    // Проверка состояния онбординга
+    window.onload = function() {
+        if (localStorage.getItem('onboardingCompleted') === 'true') {
+            document.getElementById('onboarding').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        } else {
+            onboardingScreens[0].classList.add('active');
+        }
+    };
+
+    // Стилизация fade-in для переключения между экранами
+    onboardingScreens.forEach(screen => screen.classList.add('fade'));
+
+    // Основной функционал (дата и время)
     const scheduleContainer = document.querySelector('.schedule');
-    const bookingForm = document.getElementById('bookingForm');
-    const selectedDateTimeElement = document.getElementById('selectedDateTime');
-    let selectedDate = '';
-    let selectedTime = '';
     const startTime = 9;
     const endTime = 18;
     const timeStep = 30;
-    const bookedSlots = {
-        '2023-10-21': ['10:30', '13:00', '15:30'],
-        '2023-10-22': ['11:00', '14:30']
-    };
 
-    document.getElementById('date').addEventListener('change', function() {
-        selectedDate = this.value;
-        generateTimeSlots(selectedDate);
-    });
-
-    function formatTime(hours, minutes) {
-        return (
-            ('0' + hours).slice(-2) +
-            ':' +
-            ('0' + minutes).slice(-2)
-        );
-    }
-
-    function generateTimeSlots(date) {
+    function generateTimeSlots() {
         scheduleContainer.innerHTML = '';
-        const today = new Date().toISOString().split('T')[0];
-        const isToday = date === today;
-        const now = new Date();
-
         for (let h = startTime; h < endTime; h++) {
             for (let m = 0; m < 60; m += timeStep) {
-                const time = formatTime(h, m);
+                const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
                 const slot = document.createElement('div');
-                slot.classList.add('time-slot');
-
-                // Проверяем, является ли слот занятым
-                const dateBookedSlots = bookedSlots[date] || [];
-                if (dateBookedSlots.includes(time)) {
-                    slot.classList.add('booked');
-                } else if (isToday) {
-                    const slotTime = new Date();
-                    slotTime.setHours(h, m, 0, 0);
-                    if (slotTime <= now) {
-                        slot.classList.add('booked');
-                    }
-                }
-
-                if (!slot.classList.contains('booked')) {
-                    slot.setAttribute('data-time', time);
-                    slot.addEventListener('click', function() {
-                        selectedTime = this.getAttribute('data-time');
-                        selectedDateTimeElement.textContent = 'Вы выбрали: ' + formatDate(selectedDate) + ', ' + selectedTime;
-                        bookingForm.style.display = 'block';
-                    });
-                }
-
-                slot.innerHTML = '<i class="fa fa-clock"></i><br>' + time;
+                slot.className = 'time-slot';
+                slot.textContent = time;
+                slot.onclick = () => alert(`Вы выбрали время: ${time}`);
                 scheduleContainer.appendChild(slot);
             }
         }
     }
-
-    function formatDate(dateString) {
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString('ru-RU', options);
-    }
-
-    function closeForm() {
-        bookingForm.style.display = 'none';
-    }
-
-    function submitForm() {
-        const name = document.getElementById('name').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-
-        if (name === '' || phone === '') {
-            alert('Пожалуйста, заполните все поля.');
-            return;
-        }
-
-        alert('Спасибо, ' + name + '! Ваша запись на ' + formatDate(selectedDate) + ' в ' + selectedTime + ' принята.');
-        bookingForm.style.display = 'none';
-
-        // Здесь можно добавить код для отправки данных на сервер или боту
-    }
-
-    // Устанавливаем минимальную дату для выбора (сегодня)
-    document.getElementById('date').setAttribute('min', new Date().toISOString().split('T')[0]);
+    generateTimeSlots();
 </script>
 
 </body>
